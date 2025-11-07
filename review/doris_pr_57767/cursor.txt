@@ -1,0 +1,123 @@
+Searching for PR 57767 details.
+
+
+[2 tools called]
+
+
+Fetching PR 57767 details via GitHub CLI:
+
+
+[1 tool called]
+
+
+Fetching the PR diff:
+
+
+[1 tool called]
+
+
+Reading the modified files for context:
+
+
+[2 tools called]
+
+
+Checking related code for context:
+
+
+[2 tools called]
+
+
+Checking for tests related to load channel cancellation:
+
+
+[2 tools called]
+
+
+Review of PR 57767:
+
+Problem: When a DataQualityError occurs, the load channel cancels itself and is removed from `_load_channels`. If a `tablet_writer_add_block` RPC is in flight, it triggers an "unknown load_id" error because the load_id is no longer in the map.
+
+Solution: Add a `_last_cancel_channels` cache (similar to `_last_success_channels`) to track cancelled channels. When `_get_load_channel` can't find a load_id, it checks both caches and returns OK if found in the cancel cache.
+
+Issues and suggestions:
+1. Incomplete comment: "// for case" should be completed.
+
+
+[1 tool called]
+
+
+Checking the cache type configuration:
+
+
+[1 tool called]
+
+
+## PR Review for #57767: [fix](load) Add channel records to fix the unknown load_id error
+
+### Summary
+Fixes a race condition where cancelled load channels can cause "unknown load_id" errors for in-flight RPCs. Adds a cache for cancelled channels similar to the success channel cache.
+
+### Strengths
+1. Addresses a real race condition
+2. Follows the existing pattern (`_last_success_channels`)
+3. Minimal changes
+4. Thread-safe (uses existing mutex)
+
+### Issues and suggestions
+
+#### 1. Incomplete comment (line 131 in diff)
+```cpp
+auto* handle_failed = _last_cancel_channels->lookup(load_id.to_string());
+// for case
+if (handle_failed != nullptr) {
+```
+Fix: Complete the comment, e.g.:
+```cpp
+// Check if this load_id was cancelled. If so, return OK to gracefully handle
+// in-flight RPC requests that arrive after cancellation.
+```
+
+#### 2. Cache type reuse
+`LastCancelChannelCache` reuses `CacheType::LAST_SUCCESS_CHANNEL_CACHE`. Consider:
+- Adding a separate `LAST_CANCEL_CHANNEL_CACHE` type, or
+- Documenting why reuse is acceptable
+
+#### 3. Missing initialization in `stop()`
+`_last_success_channels` isn't explicitly cleaned up in `stop()`. If cleanup is needed, consider handling `_last_cancel_channels` similarly.
+
+#### 4. Variable naming consistency
+The diff uses `handle_success` and `handle_failed`, which is clearer than the original `handle`.
+
+#### 5. Potential edge case
+In `cancel()`, the cache insertion happens outside the lock:
+```cpp
+{
+    std::lock_guard<std::mutex> l(_lock);
+    // ... erase from _load_channels ...
+}
+auto* handle = _last_cancel_channels->insert(load_id.to_string(), nullptr, 1, 1);
+_last_cancel_channels->release(handle);
+```
+This is fine since the cache is thread-safe, but consider adding a brief comment.
+
+#### 6. Missing test coverage
+No tests are included. Consider adding a test that:
+- Cancels a load channel
+- Sends an RPC after cancellation
+- Verifies it returns OK instead of "unknown load_id"
+
+### Code quality
+- Code style matches the codebase
+- Proper use of smart pointers
+- Thread safety maintained
+
+### Recommendation
+Approve with minor changes:
+1. Complete the comment on line 131
+2. Add a test case if possible
+3. Consider documenting the cache type reuse or adding a separate type
+
+The fix is sound and addresses the issue. The main concern is the incomplete comment, which should be fixed before merging.
+
+Should I create a patch with these improvements?
