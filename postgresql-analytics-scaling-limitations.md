@@ -4,6 +4,18 @@ PostgreSQL has earned its reputation as one of the most capable and reliable rel
 
 This deep dive examines why PostgreSQL struggles with analytics at scale, exploring the architectural decisions that make it exceptional for OLTP but problematic for OLAP workloads. Understanding these limitations helps database administrators and engineers make informed decisions about when to optimize their existing PostgreSQL deployment versus when to migrate analytical workloads to purpose-built systems.
 
+## The Root Cause: Architectural Decisions That Cascade into Problems
+
+PostgreSQL's analytical performance issues stem from fundamental architectural choices that create a cascade of problems:
+
+**The Cause-and-Effect Chain:**
+
+1. **Row-level MVCC + Tuple-at-a-time execution** → **Low write throughput** (20-50K rows/sec ceiling)
+2. **Row storage + Tuple execution planner (no distribution support)** → **Slow queries** (33x I/O amplification)
+3. **Row storage + Slow queries + Low write throughput** → **High infrastructure costs** (3-10x resource requirements)
+
+These aren't isolated issues—each limitation amplifies the others, creating compounding performance and cost problems as data scales. Let's examine each architectural decision and its cascading effects.
+
 ## When PostgreSQL Analytics Performance Becomes a Problem
 
 The transition from comfortable to painful rarely happens overnight. Most teams first notice PostgreSQL slow for analytics when their data crosses certain thresholds:
@@ -204,14 +216,29 @@ Additionally:
 - Replicas still use row-based storage and tuple-at-a-time execution
 - Read replicas help when you need to run the same queries more times, not when you need individual queries to run faster
 
-### Lack of Horizontal Query Parallelization
+### Lack of Horizontal Query Parallelization & Distribution Support
 
-PostgreSQL's parallel query feature distributes work across CPU cores on a single machine but cannot distribute queries across multiple servers without extensions. Even with solutions like Citus:
+**Why PostgreSQL's Query Planner Can't Scale Horizontally:**
+
+PostgreSQL's tuple-at-a-time execution model and query planner were fundamentally designed for single-node operation. This architectural choice creates hard scaling limits:
+
+- **No distributed query execution**: The planner cannot split queries across multiple nodes
+- **No parallel scan across servers**: All data for a query must reside on one instance
+- **Limited parallel query**: Parallel workers operate only on a single machine, not across a cluster
+- **No MPP (Massively Parallel Processing)**: Cannot distribute joins, aggregations, and scans across a cluster
+- **Single-node tuple processing**: Each tuple flows through executors on one machine
+
+Even with sharding extensions like Citus:
 
 - Application code needs complex logic to know which shard to query
 - Cross-shard joins are difficult or impossible
 - Complex SELECT queries may not scale out effectively
 - Distributed transactions introduce coordination latency
+- The fundamental tuple-at-a-time execution model remains unchanged
+
+**The Core Problem:**
+
+The query planner and executor were built assuming all data is local. Retrofitting distribution on top of this architecture cannot achieve the same efficiency as systems designed from the ground up for distributed execution (like MPP databases).
 
 Sharding adds significant operational complexity. Most experts recommend exhausting all other options before implementing sharding, as a combination of read replicas and careful architecture often provides substantial scalability without the overhead.
 
