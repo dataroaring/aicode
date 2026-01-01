@@ -119,6 +119,55 @@ Every time PostgreSQL reads a row, it must check the xmin and xmax values to det
 
 On tables with intensive update activity, even SELECT queries suffer from data fragmentation caused by MVCC, as the database must skip over dead tuples and check visibility for each candidate row.
 
+### Transaction ID Wraparound: The Read-Only Shutdown Risk
+
+PostgreSQL's MVCC implementation uses 32-bit transaction IDs (XIDs), which wrap around after approximately 2 billion transactions. This creates a critical operational risk for analytical workloads that can **force PostgreSQL into read-only mode**.
+
+**How Transaction ID Wraparound Works:**
+
+- PostgreSQL assigns sequential transaction IDs starting from 3
+- After 2^31 transactions (~2.1 billion), XIDs wrap around to 0
+- To prevent data corruption, PostgreSQL must mark old tuples as "frozen" before wraparound
+- VACUUM performs this freezing operation
+- If VACUUM cannot complete before wraparound threshold, **PostgreSQL enters emergency read-only mode**
+
+**Why This Devastates Analytical Workloads:**
+
+**1. Long-Running ETL Jobs Block VACUUM**
+
+Analytical workloads typically run long batch processes:
+- Multi-hour ETL jobs processing millions of rows
+- Complex transformations taking 4-8 hours
+- Nightly batch windows running 6+ hours
+
+**Problem**: VACUUM cannot reclaim transaction IDs from rows created before a still-running transaction. A 6-hour ETL job blocks VACUUM progress for 6 hours, accelerating approach to wraparound threshold.
+
+**2. Forced Read-Only Mode Shuts Down Analytics**
+
+When approaching wraparound:
+- PostgreSQL refuses all INSERT/UPDATE/DELETE operations
+- Only SELECT queries permitted
+- **Entire analytical pipeline stops**: No ETL, no data loading, no updates
+- Emergency VACUUM required before normal operations resume
+
+**3. Emergency Maintenance Creates Downtime**
+
+Resolving wraparound emergencies requires:
+- Killing all long-running transactions immediately
+- Running aggressive VACUUM FREEZE on all tables
+- For large databases (1TB+), this can take **hours to days**
+- Analytics pipelines miss SLAs, business impact multiplies
+
+**The Catch-22 for Analytics:**
+
+- Analytics **requires** long-running batch jobs for processing large datasets
+- Long-running jobs **prevent** VACUUM from making progress
+- Blocked VACUUM **accelerates** approach to wraparound
+- Wraparound **forces** read-only mode, shutting down analytics
+- Emergency recovery **requires** killing the jobs you need to run
+
+This architectural limitation makes PostgreSQL fundamentally unsuitable for high-volume analytical workloads with frequent updates. Modern analytical databases using file-level MVCC or MVCC-free architectures avoid this problem entirely.
+
 ## Query Execution Model Limitations
 
 PostgreSQL processes queries using a tuple-at-a-time execution model. Each operator in the query plan processes one row, performs its operation, and passes the result to the next operator. This architecture creates significant overhead for analytical queries that process millions of rows.
@@ -287,6 +336,86 @@ Large PostgreSQL analytical deployments require constant maintenance:
 - **VACUUM FULL**: Required for severe bloat but locks tables exclusively
 
 For a 500GB table with heavy update rates, VACUUM can run for hours, and VACUUM FULL requires exclusive locks that block all reads and writes. This creates significant operational burden and reduces available time for analytical workloads.
+
+## How Architectural Limitations Cascade into High Infrastructure Costs
+
+The architectural problems described above don't exist in isolation—they create a compounding effect that multiplies infrastructure resource requirements. Here's how each limitation directly impacts resource consumption:
+
+### The Cost Multiplication Chain
+
+**1. Row-Level MVCC → Low Write Throughput → Resource Waste**
+
+- **Write throughput ceiling**: 20,000-50,000 rows/second for UPSERTs
+- **Storage bloat**: Each UPDATE creates new row version → 3-5x storage multiplication
+- **VACUUM overhead**: 10-30% of CPU/IO consumed by maintenance operations
+- **Transaction ID wraparound risk**: Long ETL jobs block VACUUM → Forced read-only shutdowns
+- **Extended ETL windows**: Slow writes require longer processing times
+- **Emergency maintenance**: 12-24 hour outages for VACUUM FREEZE when approaching wraparound
+- **Result**: Need 3-5x more storage, 10-30% wasted compute resources, extended maintenance windows, periodic forced downtime
+
+**2. Row Storage → Slow Queries → Compute/Memory Waste**
+
+- **I/O amplification**: 33x more data scanned (reading entire rows vs needed columns)
+- **Memory pressure**: Need massive RAM to cache bloated row data
+- **IOPS multiplication**: 33x more disk operations for same analytical query
+- **Result**: Need 70% more compute instances, 85-90% higher I/O costs, larger instance sizes with more RAM
+
+**3. Tuple Execution + No Distribution → Vertical Scaling Trap**
+
+- **Single-node bottleneck**: Cannot distribute work across cluster
+- **Expensive vertical scaling**: Must use large, expensive instances
+- **Parallel query limits**: Limited to single-machine cores (16-64 cores typical)
+- **No commodity hardware**: Cannot use cost-effective distributed clusters
+- **Result**: Stuck with expensive large instances, cannot leverage horizontal scaling economics
+
+**4. B-tree Index Bloat → Storage and Maintenance Waste**
+
+- **Index bloat accumulation**: Indexes require 20-50% more storage over time
+- **REINDEX overhead**: Periodic reindexing consumes substantial resources
+- **Write slowdown**: Index maintenance slows all write operations
+- **Result**: 20-50% additional storage costs, periodic maintenance windows
+
+### Cumulative Resource Impact
+
+For a typical 10TB analytical dataset, PostgreSQL's architectural limitations create:
+
+**Storage Multiplication:**
+- Base data: 10TB
+- MVCC bloat (3-5x): 30-50TB total storage
+- Index bloat (1.2-1.5x): Additional 6-15TB
+- **Total storage needed**: 36-65TB vs 10TB in columnar systems
+
+**Compute Multiplication:**
+- Slow queries require more instances to maintain performance
+- High memory requirements due to row storage and bloat
+- Cannot horizontally distribute work
+- **Typical requirement**: 8-10 large instances (32-64 cores each) vs 3-4 instances in MPP systems
+
+**I/O Multiplication:**
+- 33x I/O amplification from row reads
+- Additional I/O for VACUUM operations
+- REINDEX I/O overhead
+- **Result**: 33-40x higher IOPS requirements
+
+**Operational Multiplication:**
+- 10-30% resource overhead for VACUUM/ANALYZE/REINDEX
+- 2-3 database administrators needed for tuning and maintenance
+- Complex optimization efforts (partitioning, materialized views, index tuning)
+- **Result**: 2-3x higher operational overhead
+
+### Total Infrastructure Resource Impact
+
+Compared to purpose-built analytical databases, PostgreSQL at scale typically requires:
+
+- **Storage**: 3-6x more (bloat + inefficient compression)
+- **Compute**: 3-10x more instances (vertical scaling + inefficiency)
+- **I/O**: 33-40x more operations (row reads + maintenance)
+- **Memory**: 2-4x more RAM (caching bloated data)
+- **Operations**: 2-3x more administrative effort
+
+**Overall infrastructure resource consumption: 70-80% higher**
+
+This resource multiplication isn't due to PostgreSQL being poorly designed—it's the inevitable result of using an OLTP-optimized architecture for OLAP workloads at scale. The architectural decisions that make PostgreSQL excellent for transactions create compounding inefficiencies for analytics.
 
 ## Real-World Impact Scenarios
 
