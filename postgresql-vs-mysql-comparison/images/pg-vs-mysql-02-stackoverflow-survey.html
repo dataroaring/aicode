@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { width: 700px; height: 400px; background: #fafafa; font-family: Arial, sans-serif; overflow: hidden; }
+  .container { width: 700px; height: 400px; position: relative; }
+  .title { font-size: 18px; font-weight: bold; color: #1a1a1a; text-align: center; padding-top: 18px; }
+  .subtitle { font-size: 12px; color: #888; text-align: center; margin-top: 4px; }
+
+  .chart-wrapper { display: flex; gap: 40px; justify-content: center; margin-top: 24px; padding: 0 40px; }
+  .chart-col { flex: 1; }
+  .chart-title { font-size: 14px; font-weight: 600; color: #333; text-align: center; margin-bottom: 14px; }
+
+  .bar-row { display: flex; align-items: center; margin-bottom: 8px; height: 28px; }
+  .bar-label { width: 90px; font-size: 12px; color: #555; text-align: right; padding-right: 10px; flex-shrink: 0; }
+  .bar-track { flex: 1; height: 22px; background: #eee; border-radius: 4px; position: relative; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; }
+  .bar-value { font-size: 11px; font-weight: 600; color: #fff; }
+  .bar-value-outside { font-size: 11px; font-weight: 600; color: #666; position: absolute; right: -36px; top: 3px; }
+
+  .pg-fill { background: linear-gradient(90deg, #336791, #4a86b8); }
+  .mysql-fill { background: linear-gradient(90deg, #E48E00, #f0a830); }
+  .sqlite-fill { background: linear-gradient(90deg, #5B9BD5, #7ab3e0); }
+  .mongo-fill { background: linear-gradient(90deg, #4DB33D, #6dcc5e); }
+  .redis-fill { background: linear-gradient(90deg, #DC382D, #e85b52); }
+  .mssql-fill { background: linear-gradient(90deg, #CC2927, #e04543); }
+  .maria-fill { background: linear-gradient(90deg, #003545, #2a6070); }
+
+  .badge { display: inline-block; font-size: 10px; font-weight: 700; color: #fff; background: #336791; padding: 2px 8px; border-radius: 10px; margin-left: 6px; }
+
+  .legend-note { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); font-size: 11px; color: #999; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="title">Stack Overflow 2025: Most Admired & Desired Databases</div>
+  <div class="subtitle">% of developers who used a database and want to continue (Admired) / want to start using (Desired)</div>
+
+  <div class="chart-wrapper">
+    <!-- Most Admired -->
+    <div class="chart-col">
+      <div class="chart-title">Most Admired <span class="badge">3rd year in a row</span></div>
+
+      <div class="bar-row">
+        <div class="bar-label">PostgreSQL</div>
+        <div class="bar-track">
+          <div class="bar-fill pg-fill" style="width: 76.5%;">
+            <span class="bar-value">65%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label">Redis</div>
+        <div class="bar-track">
+          <div class="bar-fill redis-fill" style="width: 64.7%;">
+            <span class="bar-value">55%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label">SQLite</div>
+        <div class="bar-track">
+          <div class="bar-fill sqlite-fill" style="width: 60%;">
+            <span class="bar-value">51%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label">MySQL</div>
+        <div class="bar-track">
+          <div class="bar-fill mysql-fill" style="width: 52.9%;">
+            <span class="bar-value">45%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label">MongoDB</div>
+        <div class="bar-track">
+          <div class="bar-fill mongo-fill" style="width: 51.8%;">
+            <span class="bar-value">44%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label">MS SQL</div>
+        <div class="bar-track">
+          <div class="bar-fill mssql-fill" style="width: 49.4%;">
+            <span class="bar-value">42%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Most Desired -->
+    <div class="chart-col">
+      <div class="chart-title">Most Desired</div>
+
+      <div class="bar-row">
+        <div class="bar-label">PostgreSQL</div>
+        <div class="bar-track">
+          <div class="bar-fill pg-fill" style="width: 76.7%;">
+            <span class="bar-value">46%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label">MongoDB</div>
+        <div class="bar-track">
+          <div class="bar-fill mongo-fill" style="width: 43.3%;">
+            <span class="bar-value">26%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label">Redis</div>
+        <div class="bar-track">
+          <div class="bar-fill redis-fill" style="width: 41.7%;">
+            <span class="bar-value">25%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label">SQLite</div>
+        <div class="bar-track">
+          <div class="bar-fill sqlite-fill" style="width: 33.3%;">
+            <span class="bar-value">20%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label">MySQL</div>
+        <div class="bar-track">
+          <div class="bar-fill mysql-fill" style="width: 30%;">
+            <span class="bar-value">18%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label">MariaDB</div>
+        <div class="bar-track">
+          <div class="bar-fill maria-fill" style="width: 16.7%;">
+            <span class="bar-value">10%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend-note">Source: Stack Overflow Developer Survey 2025 — 64,000+ developers</div>
+</div>
+</body>
+</html>

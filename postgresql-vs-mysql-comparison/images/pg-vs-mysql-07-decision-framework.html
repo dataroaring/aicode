@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { width: 700px; height: 400px; background: #fafafa; font-family: Arial, sans-serif; overflow: hidden; }
+  .container { width: 700px; height: 400px; position: relative; }
+  .title { font-size: 17px; font-weight: bold; color: #1a1a1a; text-align: center; padding-top: 10px; }
+  .subtitle { font-size: 11px; color: #888; text-align: center; margin-top: 2px; }
+
+  .flow { padding: 8px 24px 0; }
+
+  /* Decision nodes */
+  .decision { display: flex; align-items: center; margin-bottom: 2px; }
+  .q-box { width: 230px; background: #fff; border: 1.5px solid #ddd; border-radius: 6px; padding: 5px 10px; display: flex; align-items: center; font-size: 10.5px; color: #333; font-weight: 600; line-height: 1.25; flex-shrink: 0; }
+  .q-box .q-num { display: inline-block; width: 18px; height: 18px; background: #f1f5f9; border-radius: 50%; text-align: center; line-height: 18px; font-size: 9px; color: #666; margin-right: 7px; flex-shrink: 0; }
+  .arrows { display: flex; flex-direction: column; justify-content: center; width: 46px; text-align: center; }
+  .arrow-yes { font-size: 10px; color: #336791; font-weight: 700; }
+  .result { flex: 1; display: flex; align-items: center; }
+  .result-pg { background: #e8f0f8; border: 1.5px solid #336791; border-radius: 6px; padding: 5px 10px; font-size: 10.5px; color: #336791; font-weight: 600; line-height: 1.25; }
+  .result-mysql { background: #fef8ec; border: 1.5px solid #E48E00; border-radius: 6px; padding: 5px 10px; font-size: 10.5px; color: #b87800; font-weight: 600; line-height: 1.25; }
+  .result-either { background: #f1f5f9; border: 1.5px solid #94a3b8; border-radius: 6px; padding: 5px 10px; font-size: 10.5px; color: #555; font-weight: 600; line-height: 1.25; }
+
+  .continue-arrow { width: 230px; text-align: center; font-size: 9px; color: #bbb; margin: -1px 0 0; line-height: 1.3; }
+
+  .bottom-note { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); font-size: 10.5px; color: #666; background: #fff; padding: 5px 14px; border-radius: 16px; border: 1px solid #e5e7eb; white-space: nowrap; }
+  .bottom-note strong { color: #336791; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="title">PostgreSQL vs MySQL: Decision Framework</div>
+  <div class="subtitle">Ask these questions in order to find your answer</div>
+
+  <div class="flow">
+    <!-- Q1 -->
+    <div class="decision">
+      <div class="q-box"><span class="q-num">1</span>Existing app with MySQL and working fine?</div>
+      <div class="arrows"><span class="arrow-yes">YES →</span></div>
+      <div class="result"><div class="result-mysql">Stay with MySQL. Migration cost rarely justified.</div></div>
+    </div>
+    <div class="continue-arrow">↓ NO</div>
+
+    <!-- Q2 -->
+    <div class="decision">
+      <div class="q-box"><span class="q-num">2</span>WordPress, Drupal, or PHP-native stack?</div>
+      <div class="arrows"><span class="arrow-yes">YES →</span></div>
+      <div class="result"><div class="result-mysql">MySQL. Deep ecosystem integration.</div></div>
+    </div>
+    <div class="continue-arrow">↓ NO</div>
+
+    <!-- Q3 -->
+    <div class="decision">
+      <div class="q-box"><span class="q-num">3</span>Need JSONB, vectors, geospatial, or time-series?</div>
+      <div class="arrows"><span class="arrow-yes">YES →</span></div>
+      <div class="result"><div class="result-pg">PostgreSQL. Extensions handle these natively.</div></div>
+    </div>
+    <div class="continue-arrow">↓ NO</div>
+
+    <!-- Q4 -->
+    <div class="decision">
+      <div class="q-box"><span class="q-num">4</span>Complex queries? (3+ table joins, CTEs, windows)</div>
+      <div class="arrows"><span class="arrow-yes">YES →</span></div>
+      <div class="result"><div class="result-pg">PostgreSQL. Superior query optimizer.</div></div>
+    </div>
+    <div class="continue-arrow">↓ NO</div>
+
+    <!-- Q5 -->
+    <div class="decision">
+      <div class="q-box"><span class="q-num">5</span>Simple CRUD, >80% reads, PK lookups?</div>
+      <div class="arrows"><span class="arrow-yes">YES →</span></div>
+      <div class="result"><div class="result-either">Either works. Choose based on team expertise.</div></div>
+    </div>
+    <div class="continue-arrow">↓ ELSE</div>
+
+    <!-- Default -->
+    <div class="decision">
+      <div class="q-box"><span class="q-num">✓</span>Starting fresh, no constraints?</div>
+      <div class="arrows"><span class="arrow-yes">→</span></div>
+      <div class="result"><div class="result-pg">PostgreSQL. The modern default.</div></div>
+    </div>
+  </div>
+
+  <div class="bottom-note">When in doubt, <strong>PostgreSQL</strong> is the safer long-term bet for new projects</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { width: 700px; height: 400px; background: #fafafa; font-family: Arial, sans-serif; overflow: hidden; }
+  .container { width: 700px; height: 400px; position: relative; }
+  .title { font-size: 17px; font-weight: bold; color: #1a1a1a; text-align: center; padding-top: 12px; }
+  .subtitle { font-size: 11px; color: #888; text-align: center; margin-top: 3px; }
+
+  .arch { position: relative; width: 640px; height: 310px; margin: 8px auto 0; }
+
+  .layer { position: absolute; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+
+  .app-layer { top: 0; left: 200px; width: 240px; height: 44px; background: #f1f5f9; border: 2px solid #cbd5e1; }
+  .app-label { font-size: 12px; font-weight: 700; color: #475569; }
+  .app-sub { font-size: 9px; color: #94a3b8; }
+
+  .oltp-layer { top: 72px; left: 30px; width: 260px; height: 100px; background: #e8f0f8; border: 2px solid #336791; }
+  .olap-layer { top: 72px; right: 20px; width: 260px; height: 100px; background: linear-gradient(135deg, #1e3a5f, #2563eb); border: 2px solid #1e40af; }
+
+  .layer-title { font-size: 14px; font-weight: 800; }
+  .layer-sub { font-size: 10px; margin-top: 1px; }
+  .layer-items { font-size: 9px; margin-top: 6px; line-height: 1.5; }
+
+  .oltp-layer .layer-title { color: #336791; }
+  .oltp-layer .layer-sub { color: #5a8bb5; }
+  .oltp-layer .layer-items { color: #666; }
+  .olap-layer .layer-title { color: #fff; }
+  .olap-layer .layer-sub { color: #93c5fd; }
+  .olap-layer .layer-items { color: #bfdbfe; }
+
+  .comparison { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; gap: 16px; width: 600px; }
+  .comp-box { flex: 1; border-radius: 8px; padding: 8px; text-align: center; }
+  .comp-oltp { background: #f0f5fa; border: 1px solid #b0cde0; }
+  .comp-olap { background: #eff6ff; border: 1px solid #93c5fd; }
+  .comp-title { font-size: 10px; font-weight: 700; color: #333; }
+  .comp-items { font-size: 9px; color: #666; margin-top: 3px; line-height: 1.4; }
+
+  .velodb-note { position: absolute; bottom: 6px; right: 20px; font-size: 9px; color: #2563eb; font-weight: 600; }
+
+  .connector-svg { position: absolute; top: 0; left: 0; width: 640px; height: 310px; pointer-events: none; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="title">When You Outgrow Both: OLTP + OLAP Architecture</div>
+  <div class="subtitle">Separate transaction processing from analytics for optimal performance at each layer</div>
+
+  <div class="arch">
+    <svg class="connector-svg" viewBox="0 0 640 310">
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#94a3b8"/>
+        </marker>
+      </defs>
+      <!-- App to OLTP -->
+      <path d="M280,44 L200,72" stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+      <text x="215" y="54" font-size="9" fill="#94a3b8" font-family="Arial">reads/writes</text>
+      <!-- OLTP to OLAP (CDC) -->
+      <path d="M290,122 L370,122" stroke="#64748b" stroke-width="2" stroke-dasharray="6,4" fill="none" marker-end="url(#arrowhead)"/>
+      <text x="308" y="114" font-size="9" fill="#64748b" font-family="Arial" font-weight="600">CDC / ETL</text>
+      <!-- App to OLAP -->
+      <path d="M360,44 L480,72" stroke="#93c5fd" stroke-width="2" stroke-dasharray="4,3" fill="none" marker-end="url(#arrowhead)"/>
+      <text x="400" y="54" font-size="9" fill="#93c5fd" font-family="Arial">dashboards</text>
+    </svg>
+
+    <div class="layer app-layer">
+      <div class="app-label">Application Layer</div>
+      <div class="app-sub">Web app, API, microservices</div>
+    </div>
+
+    <div class="layer oltp-layer">
+      <div class="layer-title">PostgreSQL / MySQL</div>
+      <div class="layer-sub">OLTP (Transactions)</div>
+      <div class="layer-items">Point queries, short transactions<br>User-facing operations, &lt; 10ms</div>
+    </div>
+
+    <div class="layer olap-layer">
+      <div class="layer-title">Apache Doris</div>
+      <div class="layer-sub">OLAP (Analytics)</div>
+      <div class="layer-items">Multi-table joins, aggregations<br>Dashboards, billions of rows in seconds</div>
+    </div>
+
+    <div class="comparison">
+      <div class="comp-box comp-oltp">
+        <div class="comp-title">OLTP Strengths</div>
+        <div class="comp-items">Row-oriented storage<br>ACID transactions<br>Point lookups, small writes</div>
+      </div>
+      <div class="comp-box comp-olap">
+        <div class="comp-title">OLAP Strengths</div>
+        <div class="comp-items">Columnar storage, MPP engine<br>Real-time updates<br>Complex analytics at scale</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="velodb-note">VeloDB: Managed Apache Doris →</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { width: 700px; height: 400px; background: #fafafa; font-family: Arial, sans-serif; overflow: hidden; }
+  .container { width: 700px; height: 400px; position: relative; }
+  .title { font-size: 17px; font-weight: bold; color: #1a1a1a; text-align: center; padding-top: 10px; }
+
+  .cases { display: flex; gap: 12px; padding: 8px 16px 0; height: 370px; }
+  .case { flex: 1; background: #fff; border-radius: 8px; padding: 10px 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; flex-direction: column; }
+  .case-header { text-align: center; padding-bottom: 6px; border-bottom: 2px solid #336791; margin-bottom: 6px; }
+  .case-logo { font-size: 14px; font-weight: 800; color: #1a1a1a; }
+  .case-stat { font-size: 20px; font-weight: 800; color: #336791; margin-top: 1px; }
+  .case-stat-label { font-size: 9px; color: #888; }
+
+  .metric { display: flex; align-items: center; gap: 5px; margin: 3px 0; }
+  .metric-icon { width: 16px; height: 16px; background: #f0f4f8; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; flex-shrink: 0; }
+  .metric-text { font-size: 10px; color: #555; line-height: 1.2; }
+  .metric-num { font-weight: 700; color: #336791; }
+
+  .shard-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5px; margin-top: 2px; }
+  .shard { width: 100%; aspect-ratio: 1; background: #e0ecf5; border-radius: 1px; border: 1px solid #b0cde0; }
+  .shard.active { background: #336791; }
+
+  .insight-box { margin-top: auto; padding: 5px 6px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 5px; font-size: 8.5px; color: #166534; text-align: center; line-height: 1.3; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="title">Real-World PostgreSQL at Extreme Scale</div>
+
+  <div class="cases">
+    <!-- OpenAI Case -->
+    <div class="case">
+      <div class="case-header">
+        <div class="case-logo">OpenAI / ChatGPT</div>
+        <div class="case-stat">800M users</div>
+        <div class="case-stat-label">on PostgreSQL</div>
+      </div>
+
+      <div class="metric">
+        <div class="metric-icon">🖥</div>
+        <div class="metric-text"><span class="metric-num">1</span> primary + <span class="metric-num">~50</span> read replicas</div>
+      </div>
+      <div class="metric">
+        <div class="metric-icon">⚡</div>
+        <div class="metric-text"><span class="metric-num">Millions</span> QPS, p99 &lt; <span class="metric-num">20ms</span></div>
+      </div>
+      <div class="metric">
+        <div class="metric-icon">📈</div>
+        <div class="metric-text"><span class="metric-num">10x</span> load growth in one year</div>
+      </div>
+      <div class="metric">
+        <div class="metric-icon">🔗</div>
+        <div class="metric-text">PgBouncer: conn time <span class="metric-num">50ms → 5ms</span></div>
+      </div>
+      <div class="metric">
+        <div class="metric-icon">🧠</div>
+        <div class="metric-text"><span class="metric-num">pgvector</span> for vector search in-database</div>
+      </div>
+      <div class="metric">
+        <div class="metric-icon">✍️</div>
+        <div class="metric-text">Writes offloaded to <span class="metric-num">Cosmos DB</span></div>
+      </div>
+
+      <div class="insight-box">Played to PostgreSQL's strengths (reads, extensibility). Offloaded its weakness (write amplification) to Cosmos DB.</div>
+    </div>
+
+    <!-- Notion Case -->
+    <div class="case">
+      <div class="case-header">
+        <div class="case-logo">Notion</div>
+        <div class="case-stat">480 shards</div>
+        <div class="case-stat-label">across 96 physical nodes</div>
+      </div>
+
+      <div class="metric">
+        <div class="metric-icon">⚠️</div>
+        <div class="metric-text">Hit <span class="metric-num">TXID wraparound</span> risk (VACUUM stall)</div>
+      </div>
+      <div class="metric">
+        <div class="metric-icon">🔑</div>
+        <div class="metric-text">Shard key: <span class="metric-num">workspace_id</span> for data locality</div>
+      </div>
+      <div class="metric">
+        <div class="metric-icon">📋</div>
+        <div class="metric-text">Double-write migration with <span class="metric-num">audit log</span></div>
+      </div>
+      <div class="metric">
+        <div class="metric-icon">⏱</div>
+        <div class="metric-text">Final cutover: <span class="metric-num">5 min</span> scheduled downtime</div>
+      </div>
+      <div class="metric">
+        <div class="metric-icon">🔄</div>
+        <div class="metric-text">Re-sharded <span class="metric-num">32 → 96</span> nodes, zero code changes</div>
+      </div>
+
+      <div style="margin-top: 4px;">
+        <div style="font-size: 8px; color: #888; margin-bottom: 2px; text-align: center;">480 logical shards (each square = ~10 shards)</div>
+        <div class="shard-grid">
+          <div class="shard active"></div><div class="shard active"></div><div class="shard active"></div><div class="shard active"></div><div class="shard active"></div><div class="shard active"></div><div class="shard active"></div><div class="shard active"></div><div class="shard active"></div><div class="shard active"></div><div class="shard active"></div><div class="shard active"></div>
+          <div class="shard"></div><div class="shard"></div><div class="shard"></div><div class="shard"></div><div class="shard"></div><div class="shard"></div><div class="shard"></div><div class="shard"></div><div class="shard"></div><div class="shard"></div><div class="shard"></div><div class="shard"></div>
+          <div class="shard"></div><div class="shard"></div><div class="shard"></div><div class="shard"></div><div class="shard"></div><div class="shard"></div><div class="shard"></div><div class="shard"></div><div class="shard"></div><div class="shard"></div><div class="shard"></div><div class="shard"></div>
+          <div class="shard"></div><div class="shard"></div><div class="shard"></div><div class="shard"></div><div class="shard"></div><div class="shard"></div><div class="shard"></div><div class="shard"></div><div class="shard"></div><div class="shard"></div><div class="shard"></div><div class="shard"></div>
+        </div>
+      </div>
+
+      <div class="insight-box">Hit the exact MVCC/VACUUM problem Pavlo described. Solved by sharding PostgreSQL, not replacing it.</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

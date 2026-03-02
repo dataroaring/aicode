@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { width: 700px; height: 400px; background: #fafafa; font-family: Arial, sans-serif; overflow: hidden; }
+  .container { width: 700px; height: 400px; position: relative; }
+  .title { font-size: 18px; font-weight: bold; color: #1a1a1a; text-align: center; padding-top: 18px; }
+  .subtitle { font-size: 12px; color: #888; text-align: center; margin-top: 4px; }
+
+  .diagram { position: relative; width: 620px; margin: 20px auto 0; height: 290px; }
+
+  /* Center PostgreSQL node */
+  .pg-core { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 140px; height: 140px; background: linear-gradient(135deg, #336791, #4a86b8); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; box-shadow: 0 4px 20px rgba(51,103,145,0.3); z-index: 2; }
+  .pg-core .pg-icon { font-size: 28px; font-weight: bold; }
+  .pg-core .pg-label { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+  .pg-core .pg-sublabel { font-size: 10px; margin-top: 2px; opacity: 0.7; }
+
+  /* Extension nodes */
+  .ext-node { position: absolute; width: 130px; text-align: center; z-index: 2; }
+  .ext-box { background: #fff; border: 2px solid #336791; border-radius: 8px; padding: 8px 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .ext-name { font-size: 13px; font-weight: 700; color: #336791; }
+  .ext-replaces { font-size: 10px; color: #999; margin-top: 2px; }
+  .ext-desc { font-size: 10px; color: #555; margin-top: 3px; line-height: 1.3; }
+
+  /* Connector lines (SVG overlay) */
+  .connectors { position: absolute; top: 0; left: 0; width: 620px; height: 290px; }
+  .connector { stroke: #336791; stroke-width: 1.5; stroke-dasharray: 6,4; opacity: 0.4; }
+
+  /* Bottom comparison */
+  .comparison { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 16px; font-size: 11px; }
+  .comp-bad { color: #dc3545; background: #fef2f2; padding: 4px 12px; border-radius: 12px; border: 1px solid #fecaca; }
+  .comp-good { color: #166534; background: #f0fdf4; padding: 4px 12px; border-radius: 12px; border: 1px solid #bbf7d0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="title">PostgreSQL Extension Ecosystem: One Database, Many Workloads</div>
+  <div class="subtitle">Extensions run inside the database process with full access to storage, indexing, and query planning</div>
+
+  <div class="diagram">
+    <svg class="connectors" viewBox="0 0 620 290">
+      <!-- Lines from center (310,145) to each extension -->
+      <line x1="310" y1="145" x2="65" y2="40" class="connector"/>
+      <line x1="310" y1="145" x2="245" y2="25" class="connector"/>
+      <line x1="310" y1="145" x2="555" y2="40" class="connector"/>
+      <line x1="310" y1="145" x2="65" y2="250" class="connector"/>
+      <line x1="310" y1="145" x2="555" y2="250" class="connector"/>
+    </svg>
+
+    <!-- Center: PostgreSQL -->
+    <div class="pg-core">
+      <div class="pg-icon">PostgreSQL</div>
+      <div class="pg-label">Extensible Core</div>
+      <div class="pg-sublabel">Custom types, operators, indexes</div>
+    </div>
+
+    <!-- Top-left: pgvector -->
+    <div class="ext-node" style="left: 0; top: 0;">
+      <div class="ext-box">
+        <div class="ext-name">pgvector</div>
+        <div class="ext-replaces">Replaces: Pinecone, Weaviate</div>
+        <div class="ext-desc">Vector similarity search for AI/ML embeddings</div>
+      </div>
+    </div>
+
+    <!-- Top-center: pg_trgm + FTS -->
+    <div class="ext-node" style="left: 180px; top: -10px;">
+      <div class="ext-box">
+        <div class="ext-name">pg_trgm + FTS</div>
+        <div class="ext-replaces">Replaces: Elasticsearch</div>
+        <div class="ext-desc">Full-text search with trigram matching</div>
+      </div>
+    </div>
+
+    <!-- Top-right: TimescaleDB -->
+    <div class="ext-node" style="right: 0; top: 0;">
+      <div class="ext-box">
+        <div class="ext-name">TimescaleDB</div>
+        <div class="ext-replaces">Replaces: InfluxDB</div>
+        <div class="ext-desc">Time-series with compression &amp; continuous aggs</div>
+      </div>
+    </div>
+
+    <!-- Bottom-left: PostGIS -->
+    <div class="ext-node" style="left: 0; bottom: 0;">
+      <div class="ext-box">
+        <div class="ext-name">PostGIS</div>
+        <div class="ext-replaces">Replaces: GIS databases</div>
+        <div class="ext-desc">Full geospatial data types, indexes, functions</div>
+      </div>
+    </div>
+
+    <!-- Bottom-right: Citus -->
+    <div class="ext-node" style="right: 0; bottom: 0;">
+      <div class="ext-box">
+        <div class="ext-name">Citus</div>
+        <div class="ext-replaces">Replaces: Manual sharding</div>
+        <div class="ext-desc">Horizontal sharding as transparent extension</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="comparison">
+    <span class="comp-bad">Without extensions: 5 databases, 5 sync pipelines, 5 failure points</span>
+    <span class="comp-good">With extensions: 1 PostgreSQL, unified operations</span>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { width: 700px; height: 400px; background: #fafafa; font-family: Arial, sans-serif; overflow: hidden; }
+  .container { width: 700px; height: 400px; position: relative; }
+  .title { font-size: 18px; font-weight: bold; color: #1a1a1a; text-align: center; padding-top: 18px; }
+  .subtitle { font-size: 12px; color: #888; text-align: center; margin-top: 4px; }
+
+  .panels { display: flex; gap: 24px; padding: 20px 30px 0; }
+  .panel { flex: 1; background: #fff; border-radius: 10px; padding: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+  .panel-title { font-size: 14px; font-weight: 700; text-align: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid; }
+  .pg-panel .panel-title { color: #336791; border-color: #336791; }
+  .mysql-panel .panel-title { color: #E48E00; border-color: #E48E00; }
+
+  .row-visual { display: flex; gap: 2px; margin: 8px 0; height: 24px; }
+  .col-cell { flex: 1; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #fff; font-weight: 600; }
+  .col-unchanged { background: #94a3b8; }
+  .col-changed { background: #ef4444; }
+  .col-copied { background: #f87171; border: 2px dashed #dc2626; }
+  .col-delta { background: #22c55e; }
+  .col-kept { background: #d1d5db; }
+
+  .step-label { font-size: 11px; color: #555; margin: 10px 0 4px; font-weight: 600; }
+  .step-desc { font-size: 10px; color: #777; line-height: 1.4; margin-bottom: 6px; }
+
+  .impact-box { margin-top: 10px; padding: 8px; border-radius: 6px; font-size: 10px; line-height: 1.5; }
+  .impact-bad { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+  .impact-good { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+
+  .arrow-label { font-size: 10px; color: #888; text-align: center; margin: 4px 0; }
+
+  .source-note { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #aaa; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="title">MVCC: PostgreSQL Full-Row Copy vs MySQL/InnoDB Delta Storage</div>
+  <div class="subtitle">What happens when you UPDATE 1 column in a 5-column row</div>
+
+  <div class="panels">
+    <!-- PostgreSQL Panel -->
+    <div class="panel pg-panel">
+      <div class="panel-title">PostgreSQL (Full-Row Copy)</div>
+
+      <div class="step-label">Original row:</div>
+      <div class="row-visual">
+        <div class="col-cell col-unchanged">id</div>
+        <div class="col-cell col-unchanged">name</div>
+        <div class="col-cell col-unchanged">email</div>
+        <div class="col-cell col-unchanged">city</div>
+        <div class="col-cell col-unchanged">age</div>
+      </div>
+
+      <div class="arrow-label">UPDATE age = 31 ↓</div>
+
+      <div class="step-label">New version (entire row copied):</div>
+      <div class="row-visual">
+        <div class="col-cell col-copied">id</div>
+        <div class="col-cell col-copied">name</div>
+        <div class="col-cell col-copied">email</div>
+        <div class="col-cell col-copied">city</div>
+        <div class="col-cell col-changed">age✓</div>
+      </div>
+
+      <div class="step-label">Old version becomes dead tuple:</div>
+      <div class="row-visual">
+        <div class="col-cell" style="flex:1; background: #e5e7eb; color: #999; font-size: 9px;">DEAD TUPLE — waiting for VACUUM</div>
+      </div>
+
+      <div class="impact-box impact-bad">
+        <strong>Impact:</strong> 5x write amplification per update.
+        ~54% of updates also rewrite all secondary indexes.
+        Dead tuples accumulate until VACUUM runs.
+      </div>
+    </div>
+
+    <!-- MySQL Panel -->
+    <div class="panel mysql-panel">
+      <div class="panel-title">MySQL / InnoDB (Delta Storage)</div>
+
+      <div class="step-label">Original row (clustered index):</div>
+      <div class="row-visual">
+        <div class="col-cell col-unchanged">id</div>
+        <div class="col-cell col-unchanged">name</div>
+        <div class="col-cell col-unchanged">email</div>
+        <div class="col-cell col-unchanged">city</div>
+        <div class="col-cell col-unchanged">age</div>
+      </div>
+
+      <div class="arrow-label">UPDATE age = 31 ↓</div>
+
+      <div class="step-label">Row updated in-place, undo log stores diff:</div>
+      <div class="row-visual">
+        <div class="col-cell col-kept">id</div>
+        <div class="col-cell col-kept">name</div>
+        <div class="col-cell col-kept">email</div>
+        <div class="col-cell col-kept">city</div>
+        <div class="col-cell col-delta">age✓</div>
+      </div>
+
+      <div class="step-label">Undo log (compact delta):</div>
+      <div class="row-visual">
+        <div class="col-cell" style="flex: 1; background: #fef3c7; color: #92400e; font-size: 9px;">undo: age=30 (only changed column)</div>
+      </div>
+
+      <div class="impact-box impact-good">
+        <strong>Impact:</strong> Only changed column written + compact undo entry.
+        Secondary indexes unchanged if PK untouched.
+        Purge thread cleans undo logs automatically.
+      </div>
+    </div>
+  </div>
+
+  <div class="source-note">Based on: Andy Pavlo, "The Part of PostgreSQL We Hate the Most" (CMU, 2023)</div>
+</div>
+</body>
+</html>

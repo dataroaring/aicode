@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { width: 700px; height: 400px; background: #fafafa; font-family: Arial, sans-serif; overflow: hidden; }
+  .container { width: 700px; height: 400px; position: relative; }
+  .title { font-size: 17px; font-weight: bold; color: #1a1a1a; text-align: center; padding-top: 10px; }
+  .subtitle { font-size: 10px; color: #888; text-align: center; margin-top: 2px; }
+
+  table { width: 660px; margin: 8px auto 0; border-collapse: collapse; font-size: 10px; }
+  th { padding: 6px 8px; text-align: left; font-weight: 700; font-size: 10.5px; }
+  th:first-child { width: 110px; color: #555; background: #f1f5f9; border-radius: 6px 0 0 0; }
+  th:nth-child(2) { color: #fff; background: #336791; text-align: center; }
+  th:nth-child(3) { color: #fff; background: #E48E00; text-align: center; }
+  th:nth-child(4) { width: 44px; color: #555; background: #f1f5f9; text-align: center; border-radius: 0 6px 0 0; }
+
+  td { padding: 5px 8px; border-bottom: 1px solid #eee; vertical-align: top; line-height: 1.35; }
+  td:first-child { font-weight: 600; color: #444; background: #f8fafc; }
+  td:nth-child(2) { background: #f0f5fa; }
+  td:nth-child(3) { background: #fefcf5; }
+  td:nth-child(4) { text-align: center; font-weight: 700; font-size: 11px; }
+
+  tr:last-child td:first-child { border-radius: 0 0 0 6px; }
+  tr:last-child td:last-child { border-radius: 0 0 6px 0; }
+
+  .winner-pg { color: #336791; }
+  .winner-mysql { color: #E48E00; }
+  .winner-tie { color: #888; }
+
+  .legend { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); font-size: 9px; color: #999; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="title">PostgreSQL vs MySQL: Feature-by-Feature Comparison</div>
+  <div class="subtitle">Side-by-side capabilities across 8 categories</div>
+
+  <table>
+    <tr>
+      <th>Category</th>
+      <th>PostgreSQL</th>
+      <th>MySQL</th>
+      <th>Edge</th>
+    </tr>
+    <tr>
+      <td>Data Types</td>
+      <td>JSONB, arrays, hstore, range, geometric, custom types</td>
+      <td>JSON, standard types, ENUM, SET</td>
+      <td class="winner-pg">PG</td>
+    </tr>
+    <tr>
+      <td>SQL Compliance</td>
+      <td>Near-complete SQL standard, DDL transactions</td>
+      <td>Gaps in DDL transactions, some window functions</td>
+      <td class="winner-pg">PG</td>
+    </tr>
+    <tr>
+      <td>Index Types</td>
+      <td>6: B-tree, Hash, GiST, SP-GiST, GIN, BRIN</td>
+      <td>4: B-tree, Hash, Full-text, Spatial</td>
+      <td class="winner-pg">PG</td>
+    </tr>
+    <tr>
+      <td>Concurrency</td>
+      <td>True MVCC, readers never block writers</td>
+      <td>MVCC with gap locking, deadlock detection</td>
+      <td class="winner-pg">PG</td>
+    </tr>
+    <tr>
+      <td>Replication / HA</td>
+      <td>Streaming + logical (requires assembly)</td>
+      <td>Group Replication, InnoDB Cluster (turnkey)</td>
+      <td class="winner-mysql">MY</td>
+    </tr>
+    <tr>
+      <td>Extensibility</td>
+      <td>Custom types, operators, index methods, languages</td>
+      <td>Limited plugin model</td>
+      <td class="winner-pg">PG</td>
+    </tr>
+    <tr>
+      <td>License</td>
+      <td>PostgreSQL License (permissive, BSD-like)</td>
+      <td>GPL (restrictive for commercial embedding)</td>
+      <td class="winner-pg">PG</td>
+    </tr>
+    <tr>
+      <td>Connections</td>
+      <td>Process-per-connection (better isolation)</td>
+      <td>Thread-per-connection (lighter overhead)</td>
+      <td class="winner-tie">~</td>
+    </tr>
+  </table>
+
+  <div class="legend">PG = PostgreSQL advantage &nbsp;|&nbsp; MY = MySQL advantage &nbsp;|&nbsp; ~ = trade-off (depends on workload)</div>
+</div>
+</body>
+</html>
