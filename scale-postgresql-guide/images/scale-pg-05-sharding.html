@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 700px;
+  height: 400px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  overflow: hidden;
+  background: #f8f9fb;
+  padding: 16px 24px;
+}
+h2 { font-size: 14px; color: #1a1a2e; margin-bottom: 8px; font-weight: 700; }
+.subtitle { font-size: 10px; color: #888; margin-bottom: 10px; }
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.left-panel {
+  background: #fff;
+  border-radius: 8px;
+  padding: 10px;
+  border: 1px solid #e8ecf1;
+}
+.left-panel h3 { font-size: 11px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }
+.app-layer {
+  background: #336791;
+  color: #fff;
+  border-radius: 5px;
+  padding: 5px 8px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.router {
+  background: #e67e22;
+  color: #fff;
+  border-radius: 5px;
+  padding: 5px 8px;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.shards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3px;
+  margin-bottom: 6px;
+}
+.shard {
+  background: #ebf5fb;
+  border: 1px solid #aed6f1;
+  border-radius: 4px;
+  padding: 4px 2px;
+  text-align: center;
+}
+.shard .s-num { font-size: 8px; font-weight: 700; color: #336791; }
+.shard .s-db { font-size: 7px; color: #888; }
+.shard-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1px;
+}
+.shard-cell {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 2px;
+  background: #aed6f1;
+}
+.shard-cell:nth-child(3n) { background: #85c1e9; }
+.shard-cell:nth-child(5n) { background: #5dade2; }
+.stats {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+.stat {
+  flex: 1;
+  background: #f0f4f8;
+  border-radius: 4px;
+  padding: 4px;
+  text-align: center;
+}
+.stat .val { font-size: 12px; font-weight: 700; color: #336791; }
+.stat .lbl { font-size: 7px; color: #888; }
+.right-panel { display: flex; flex-direction: column; gap: 8px; }
+.case-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 10px;
+  border: 1px solid #e8ecf1;
+  flex: 1;
+}
+.case-card h3 { font-size: 11px; font-weight: 700; margin-bottom: 4px; }
+.case-card .company { color: #336791; }
+.case-card .detail { font-size: 9px; color: #555; line-height: 1.35; }
+.case-card .detail strong { color: #1a1a2e; }
+.tag {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 8px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+.tag.success { background: #e8f8f0; color: #27ae60; }
+.tag.warning { background: #fef5e7; color: #e67e22; }
+.tradeoff {
+  background: #fff;
+  border-radius: 8px;
+  padding: 8px 10px;
+  border: 1px solid #e8ecf1;
+}
+.tradeoff h3 { font-size: 10px; font-weight: 700; color: #e74c3c; margin-bottom: 4px; }
+.tradeoff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.tradeoff-item { font-size: 8.5px; color: #555; padding: 2px 0; }
+.tradeoff-item::before { content: ''; display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: #e74c3c; margin-right: 4px; vertical-align: middle; }
+</style>
+</head>
+<body>
+<h2>Sharding: Distributing PostgreSQL Across Multiple Instances</h2>
+<div class="subtitle">Real-world example: Notion's 480-shard architecture</div>
+
+<div class="layout">
+  <div class="left-panel">
+    <h3>Shard Architecture</h3>
+    <div class="app-layer">Application Layer</div>
+    <div class="router">Shard Router (workspace_id % N)</div>
+    <div class="shards">
+      <div class="shard"><div class="s-num">Shard 1-60</div><div class="s-db">DB 1</div></div>
+      <div class="shard"><div class="s-num">Shard 61-120</div><div class="s-db">DB 2</div></div>
+      <div class="shard"><div class="s-num">Shard 121-180</div><div class="s-db">DB 3</div></div>
+      <div class="shard"><div class="s-num">...</div><div class="s-db">DB N</div></div>
+    </div>
+    <div style="font-size: 9px; color: #888; margin-bottom: 4px; text-align: center;">480 logical shards mapped to physical databases</div>
+    <div class="shard-grid">
+      <div class="shard-cell"></div><div class="shard-cell"></div><div class="shard-cell"></div>
+      <div class="shard-cell"></div><div class="shard-cell"></div><div class="shard-cell"></div>
+      <div class="shard-cell"></div><div class="shard-cell"></div><div class="shard-cell"></div>
+      <div class="shard-cell"></div><div class="shard-cell"></div><div class="shard-cell"></div>
+      <div class="shard-cell"></div><div class="shard-cell"></div><div class="shard-cell"></div>
+      <div class="shard-cell"></div><div class="shard-cell"></div><div class="shard-cell"></div>
+      <div class="shard-cell"></div><div class="shard-cell"></div><div class="shard-cell"></div>
+      <div class="shard-cell"></div><div class="shard-cell"></div><div class="shard-cell"></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="val">480</div><div class="lbl">Logical Shards</div></div>
+      <div class="stat"><div class="val">32&#x2192;96</div><div class="lbl">Physical DBs</div></div>
+      <div class="stat"><div class="val">5 min</div><div class="lbl">Migration Downtime</div></div>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="case-card">
+      <h3><span class="company">Notion</span> Sharding Results</h3>
+      <div class="detail">
+        <strong>Key:</strong> workspace_id<br>
+        <strong>Before:</strong> Single DB, degrading latency at 30M users<br>
+        <strong>After:</strong> 480 shards, latency dropped immediately<br>
+        <strong>Scaling:</strong> 32 physical DBs &#x2192; 96 (3x capacity by adding hardware)
+      </div>
+      <span class="tag success">Query latency improved</span>
+      <span class="tag success">Linear horizontal scaling</span>
+    </div>
+    <div class="case-card">
+      <h3>Sharding Options</h3>
+      <div class="detail">
+        <strong>Citus:</strong> Extension, transparent distribution, best for multi-tenant SaaS<br>
+        <strong>App-level:</strong> Full control, routes in application code<br>
+        <strong>FDW:</strong> Query remote instances, poor for large joins
+      </div>
+      <span class="tag warning">Cross-shard queries are slow</span>
+    </div>
+    <div class="tradeoff">
+      <h3>Trade-offs to Consider</h3>
+      <div class="tradeoff-grid">
+        <div class="tradeoff-item">No distributed joins</div>
+        <div class="tradeoff-item">Complex schema changes</div>
+        <div class="tradeoff-item">Shard rebalancing needed</div>
+        <div class="tradeoff-item">Operational complexity</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

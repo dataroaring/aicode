@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 700px;
+  height: 400px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  overflow: hidden;
+  background: #f8f9fb;
+  padding: 18px 24px;
+}
+h2 { font-size: 14px; color: #1a1a2e; margin-bottom: 10px; font-weight: 700; }
+.comparison {
+  display: grid;
+  grid-template-columns: 1fr 40px 1fr;
+  gap: 0;
+  align-items: start;
+}
+.panel {
+  background: #fff;
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid #e8ecf1;
+}
+.panel-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: 10px;
+}
+.vs-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 80px;
+}
+.vs {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: #336791; color: #fff; font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.clients {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.client {
+  width: 22px; height: 18px; border-radius: 3px;
+  background: #5ba0e0; display: flex; align-items: center; justify-content: center;
+  font-size: 7px; color: #fff; font-weight: 600;
+}
+.arrow-down {
+  text-align: center;
+  font-size: 14px;
+  color: #999;
+  margin: 4px 0;
+}
+.pooler-box {
+  background: #27ae60;
+  color: #fff;
+  border-radius: 6px;
+  padding: 6px 10px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.conns {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+.conn {
+  width: 28px; height: 18px; border-radius: 3px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 7px; font-weight: 600;
+}
+.conn.active { background: #27ae60; color: #fff; }
+.conn.idle { background: #eee; color: #999; }
+.pg-box {
+  background: #336791;
+  color: #fff;
+  border-radius: 6px;
+  padding: 6px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 600;
+}
+.metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+.metric {
+  background: #fff;
+  border-radius: 6px;
+  padding: 8px;
+  text-align: center;
+  border: 1px solid #e8ecf1;
+}
+.metric .label { font-size: 9px; color: #888; margin-bottom: 3px; }
+.metric .before { font-size: 13px; color: #e74c3c; font-weight: 700; }
+.metric .after { font-size: 13px; color: #27ae60; font-weight: 700; }
+.metric .change { font-size: 8px; color: #27ae60; font-weight: 600; }
+.caption { font-size: 9px; color: #888; text-align: center; margin-top: 8px; font-style: italic; }
+</style>
+</head>
+<body>
+<h2>Connection Pooling: Before vs After PgBouncer</h2>
+
+<div class="comparison">
+  <div class="panel">
+    <div class="panel-title" style="background:#e74c3c;">Without Pooling</div>
+    <div class="clients">
+      <div class="client">C1</div><div class="client">C2</div><div class="client">C3</div>
+      <div class="client">C4</div><div class="client">C5</div><div class="client">C6</div>
+      <div class="client">C7</div><div class="client">C8</div><div class="client">C9</div>
+      <div class="client">C10</div><div class="client">C11</div><div class="client">C12</div>
+    </div>
+    <div style="font-size:8px; color:#888; text-align:center; margin-bottom:4px;">1,000+ direct connections</div>
+    <div class="arrow-down">&#x2193; &#x2193; &#x2193; &#x2193; &#x2193; &#x2193;</div>
+    <div class="pg-box">PostgreSQL<br><span style="font-size:8px; opacity:0.8;">1,000 backend processes = 5-10GB RAM</span></div>
+    <div style="text-align:center; margin-top:8px;">
+      <span style="font-size: 9px; color: #e74c3c; font-weight: 600;">50ms per connection setup</span>
+    </div>
+  </div>
+
+  <div class="vs-col"><div class="vs">vs</div></div>
+
+  <div class="panel">
+    <div class="panel-title" style="background:#27ae60;">With PgBouncer</div>
+    <div class="clients">
+      <div class="client">C1</div><div class="client">C2</div><div class="client">C3</div>
+      <div class="client">C4</div><div class="client">C5</div><div class="client">C6</div>
+      <div class="client">C7</div><div class="client">C8</div><div class="client">C9</div>
+      <div class="client">C10</div><div class="client">C11</div><div class="client">C12</div>
+    </div>
+    <div style="font-size:8px; color:#888; text-align:center; margin-bottom:4px;">1,000+ client connections</div>
+    <div class="arrow-down">&#x2193; &#x2193; &#x2193;</div>
+    <div class="pooler-box">PgBouncer (Connection Pool)</div>
+    <div class="conns">
+      <div class="conn active">P1</div><div class="conn active">P2</div>
+      <div class="conn active">P3</div><div class="conn idle">P4</div><div class="conn idle">P5</div>
+    </div>
+    <div style="font-size:8px; color:#888; text-align:center; margin-bottom:4px;">50 backend connections</div>
+    <div class="pg-box">PostgreSQL<br><span style="font-size:8px; opacity:0.8;">50 processes = 250-500MB RAM</span></div>
+  </div>
+</div>
+
+<div class="metrics">
+  <div class="metric">
+    <div class="label">Connection Time</div>
+    <div class="before">50ms</div>
+    <div style="font-size:10px; color:#999;">&#x2192;</div>
+    <div class="after">5ms</div>
+    <div class="change">10x faster (OpenAI)</div>
+  </div>
+  <div class="metric">
+    <div class="label">Backend RAM Usage</div>
+    <div class="before">5-10GB</div>
+    <div style="font-size:10px; color:#999;">&#x2192;</div>
+    <div class="after">250-500MB</div>
+    <div class="change">20x reduction</div>
+  </div>
+</div>
+</body>
+</html>

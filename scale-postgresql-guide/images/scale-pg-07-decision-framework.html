@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 700px;
+  height: 400px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  overflow: hidden;
+  background: #f8f9fb;
+  padding: 14px 20px;
+}
+h2 { font-size: 13px; color: #1a1a2e; margin-bottom: 8px; font-weight: 700; }
+.flow {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.flow-row {
+  display: grid;
+  grid-template-columns: 200px 30px 1fr;
+  align-items: center;
+  gap: 0;
+}
+.question {
+  background: #fff;
+  border: 2px solid #336791;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #1a1a2e;
+  text-align: center;
+}
+.arrow-col {
+  text-align: center;
+  font-size: 14px;
+  color: #336791;
+}
+.answer {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.yes-path, .no-path {
+  border-radius: 5px;
+  padding: 5px 10px;
+  font-size: 9px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.yes-path {
+  background: #e8f8f0;
+  color: #27ae60;
+  border: 1px solid #a3d9b1;
+}
+.no-path {
+  background: #fdf2e9;
+  color: #e67e22;
+  border: 1px solid #f5cba7;
+}
+.action {
+  background: #336791;
+  color: #fff;
+  border-radius: 5px;
+  padding: 5px 10px;
+  font-size: 9px;
+  font-weight: 600;
+}
+.action.green { background: #27ae60; }
+.action.orange { background: #e67e22; }
+.action.red { background: #d94040; }
+.action.purple { background: #8e44ad; }
+.then { font-size: 9px; color: #999; margin: 0 4px; }
+.bottom-table {
+  margin-top: 8px;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9px;
+}
+.bottom-table th {
+  background: #336791;
+  color: #fff;
+  padding: 5px 6px;
+  text-align: left;
+  font-weight: 600;
+}
+.bottom-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid #eee;
+  color: #555;
+}
+.bottom-table tr:nth-child(even) td { background: #f8f9fb; }
+.bottom-table .vol { font-weight: 600; color: #1a1a2e; }
+</style>
+</head>
+<body>
+<h2>Decision Framework: Which PostgreSQL Scaling Strategy?</h2>
+
+<div class="flow">
+  <div class="flow-row">
+    <div class="question">Data under 500GB?</div>
+    <div class="arrow-col">&#x2192;</div>
+    <div class="answer">
+      <div class="yes-path">Yes</div>
+      <span class="then">&#x2192;</span>
+      <div class="action green">Vertical Scaling + Connection Pooling</div>
+    </div>
+  </div>
+  <div class="flow-row">
+    <div class="question">Read-heavy bottleneck?</div>
+    <div class="arrow-col">&#x2192;</div>
+    <div class="answer">
+      <div class="yes-path">Yes</div>
+      <span class="then">&#x2192;</span>
+      <div class="action">Read Replicas + Partitioning</div>
+    </div>
+  </div>
+  <div class="flow-row">
+    <div class="question">Repeated expensive queries?</div>
+    <div class="arrow-col">&#x2192;</div>
+    <div class="answer">
+      <div class="yes-path">Yes</div>
+      <span class="then">&#x2192;</span>
+      <div class="action orange">Caching + Materialized Views</div>
+    </div>
+  </div>
+  <div class="flow-row">
+    <div class="question">Multi-tenant / write scaling?</div>
+    <div class="arrow-col">&#x2192;</div>
+    <div class="answer">
+      <div class="yes-path">Yes</div>
+      <span class="then">&#x2192;</span>
+      <div class="action purple">Sharding (Citus / App-Level)</div>
+    </div>
+  </div>
+  <div class="flow-row">
+    <div class="question">Heavy analytics on large data?</div>
+    <div class="arrow-col">&#x2192;</div>
+    <div class="answer">
+      <div class="yes-path">Yes</div>
+      <span class="then">&#x2192;</span>
+      <div class="action red">Offload to Doris / ClickHouse / Snowflake</div>
+    </div>
+  </div>
+</div>
+
+<table class="bottom-table">
+  <tr>
+    <th>Data Volume</th>
+    <th>Workload</th>
+    <th>Recommended Strategy</th>
+    <th>Key Signal</th>
+  </tr>
+  <tr>
+    <td class="vol">&lt;50GB</td>
+    <td>Mixed OLTP + light analytics</td>
+    <td>Vertical + Pooling</td>
+    <td>Response times stable</td>
+  </tr>
+  <tr>
+    <td class="vol">50-500GB</td>
+    <td>Read-heavy OLTP</td>
+    <td>Replicas + Partitioning</td>
+    <td>Read latency growing 20%/mo</td>
+  </tr>
+  <tr>
+    <td class="vol">500GB-2TB</td>
+    <td>OLTP + growing analytics</td>
+    <td>Caching + Sharding</td>
+    <td>VACUUM can't keep up</td>
+  </tr>
+  <tr>
+    <td class="vol">2TB+</td>
+    <td>Heavy analytical queries</td>
+    <td>Offload analytics</td>
+    <td>Dashboard queries &gt;5 seconds</td>
+  </tr>
+</table>
+</body>
+</html>
